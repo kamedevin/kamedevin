@@ -31,4 +31,11 @@ interface CategoryDao {
 
     @Query("SELECT COUNT(*) FROM categories")
     suspend fun count(): Int
+
+    /** Full-history read, used only for building a backup snapshot. */
+    @Query("SELECT * FROM categories")
+    suspend fun getAll(): List<CategoryEntity>
+
+    @Query("DELETE FROM categories")
+    suspend fun deleteAll()
 }

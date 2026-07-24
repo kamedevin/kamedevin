@@ -46,6 +46,7 @@ dependencies {
     implementation(project(":feature:accounts"))
     implementation(project(":feature:settings"))
     implementation(project(":backup:api"))
+    implementation(project(":backup:googledrive"))
     implementation(project(":widget"))
 
     implementation(libs.androidx.core.ktx)

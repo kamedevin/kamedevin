@@ -13,6 +13,9 @@ interface AccountDao {
     @Insert
     suspend fun insert(account: AccountEntity): Long
 
+    @Insert
+    suspend fun insertAll(accounts: List<AccountEntity>)
+
     @Update
     suspend fun update(account: AccountEntity)
 
@@ -30,6 +33,13 @@ interface AccountDao {
 
     @Query("SELECT COUNT(*) FROM accounts")
     suspend fun count(): Int
+
+    /** Full-history read, used only for building a backup snapshot. */
+    @Query("SELECT * FROM accounts")
+    suspend fun getAll(): List<AccountEntity>
+
+    @Query("DELETE FROM accounts")
+    suspend fun deleteAll()
 
     @Query(
         """

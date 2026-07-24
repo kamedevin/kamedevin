@@ -15,6 +15,9 @@ interface TransactionDao {
     @Insert
     suspend fun insert(transaction: TransactionEntity): Long
 
+    @Insert
+    suspend fun insertAll(transactions: List<TransactionEntity>)
+
     @Update
     suspend fun update(transaction: TransactionEntity)
 
@@ -29,6 +32,13 @@ interface TransactionDao {
 
     @Query("SELECT * FROM transactions WHERE date BETWEEN :start AND :end ORDER BY date DESC")
     fun observeInRange(start: Instant, end: Instant): Flow<List<TransactionEntity>>
+
+    /** Full-history read, used only for building a backup snapshot. */
+    @Query("SELECT * FROM transactions")
+    suspend fun getAll(): List<TransactionEntity>
+
+    @Query("DELETE FROM transactions")
+    suspend fun deleteAll()
 
     @Query(
         """

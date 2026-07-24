@@ -1,6 +1,7 @@
-package com.kamedevin.budget.app.di
+package com.kamedevin.budget.backup.googledrive.di
 
 import com.kamedevin.budget.backup.api.BackupManager
+import com.kamedevin.budget.backup.googledrive.GoogleDriveBackupManager
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -9,8 +10,8 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class BackupModule {
+abstract class BackupBindingModule {
     @Binds
     @Singleton
-    abstract fun bindBackupManager(impl: NoOpBackupManager): BackupManager
+    abstract fun bindBackupManager(impl: GoogleDriveBackupManager): BackupManager
 }
