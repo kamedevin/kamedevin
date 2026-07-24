@@ -29,3 +29,9 @@ enum class AccountType {
     SAVINGS,
     OTHER,
 }
+
+enum class ThemeMode {
+    SYSTEM,
+    LIGHT,
+    DARK,
+}

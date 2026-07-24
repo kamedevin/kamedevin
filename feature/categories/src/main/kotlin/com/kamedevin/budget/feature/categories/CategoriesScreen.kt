@@ -1,8 +1,10 @@
 package com.kamedevin.budget.feature.categories
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kamedevin.budget.core.model.Category
 import com.kamedevin.budget.core.model.label
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +41,7 @@ fun CategoriesScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showAddDialog by remember { mutableStateOf(false) }
+    var editingCategory by remember { mutableStateOf<Category?>(null) }
 
     Scaffold(
         topBar = {
@@ -76,6 +80,9 @@ fun CategoriesScreen(
                                 }
                             }
                         },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { editingCategory = category },
                     )
                 }
             }
@@ -83,11 +90,27 @@ fun CategoriesScreen(
     }
 
     if (showAddDialog) {
-        AddCategoryDialog(
+        CategoryDialog(
+            title = "Add category",
+            confirmLabel = "Add",
             onDismiss = { showAddDialog = false },
             onConfirm = { name, bucket ->
                 viewModel.addCategory(name, bucket)
                 showAddDialog = false
+            },
+        )
+    }
+
+    editingCategory?.let { category ->
+        CategoryDialog(
+            title = "Edit category",
+            confirmLabel = "Save",
+            initialName = category.name,
+            initialBucket = category.bucket,
+            onDismiss = { editingCategory = null },
+            onConfirm = { name, bucket ->
+                viewModel.updateCategory(category, name, bucket)
+                editingCategory = null
             },
         )
     }

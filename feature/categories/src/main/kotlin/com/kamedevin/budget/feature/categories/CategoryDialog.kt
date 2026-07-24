@@ -24,19 +24,24 @@ import com.kamedevin.budget.core.model.label
 
 private val BUCKET_OPTIONS: List<Bucket?> = listOf(null) + Bucket.entries
 
+/** Shared by both the "add category" and "rename/re-bucket category" flows. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddCategoryDialog(
+fun CategoryDialog(
+    title: String,
+    confirmLabel: String,
+    initialName: String = "",
+    initialBucket: Bucket? = Bucket.NEEDS,
     onDismiss: () -> Unit,
     onConfirm: (name: String, bucket: Bucket?) -> Unit,
 ) {
-    var name by remember { mutableStateOf("") }
-    var bucket by remember { mutableStateOf<Bucket?>(Bucket.NEEDS) }
+    var name by remember { mutableStateOf(initialName) }
+    var bucket by remember { mutableStateOf(initialBucket) }
     var menuExpanded by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add category") },
+        title = { Text(title) },
         text = {
             Column {
                 OutlinedTextField(
@@ -74,7 +79,9 @@ fun AddCategoryDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { if (name.isNotBlank()) onConfirm(name.trim(), bucket) }) { Text("Add") }
+            TextButton(onClick = { if (name.isNotBlank()) onConfirm(name.trim(), bucket) }) {
+                Text(confirmLabel)
+            }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel") }

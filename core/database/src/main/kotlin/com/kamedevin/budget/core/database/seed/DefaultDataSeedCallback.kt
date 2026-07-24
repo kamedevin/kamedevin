@@ -43,7 +43,7 @@ class DefaultDataSeedCallback(
             CategoryEntity(name = "Utilities", bucket = Bucket.NEEDS, colorHex = "#5C6BC0", isDefault = true, sortOrder = 3),
             CategoryEntity(name = "Transport", bucket = Bucket.NEEDS, colorHex = "#5C6BC0", isDefault = true, sortOrder = 4),
             CategoryEntity(name = "Insurance", bucket = Bucket.NEEDS, colorHex = "#5C6BC0", isDefault = true, sortOrder = 5),
-            CategoryEntity(name = "Dining", bucket = Bucket.WANTS, colorHex = "#FFA726", isDefault = true, sortOrder = 6),
+            CategoryEntity(name = "Eating Out", bucket = Bucket.WANTS, colorHex = "#FFA726", isDefault = true, sortOrder = 6),
             CategoryEntity(name = "Entertainment", bucket = Bucket.WANTS, colorHex = "#FFA726", isDefault = true, sortOrder = 7),
             CategoryEntity(name = "Shopping", bucket = Bucket.WANTS, colorHex = "#FFA726", isDefault = true, sortOrder = 8),
             CategoryEntity(name = "Subscriptions", bucket = Bucket.WANTS, colorHex = "#FFA726", isDefault = true, sortOrder = 9),

@@ -4,12 +4,16 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kamedevin.budget.backup.api.BackupManager
+import com.kamedevin.budget.core.domain.repository.ThemePreferenceRepository
+import com.kamedevin.budget.core.model.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -23,10 +27,14 @@ data class SettingsUiState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val backupManager: BackupManager,
+    private val themePreferenceRepository: ThemePreferenceRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
+
+    val themeMode: StateFlow<ThemeMode> = themePreferenceRepository.observeThemeMode()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeMode.SYSTEM)
 
     init {
         viewModelScope.launch {
@@ -37,6 +45,10 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { it.copy(lastBackupTime = time) }
             }
         }
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        viewModelScope.launch { themePreferenceRepository.setThemeMode(mode) }
     }
 
     fun signIn(activity: Activity) {

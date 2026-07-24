@@ -40,6 +40,18 @@ class CategoriesViewModel @Inject constructor(
         }
     }
 
+    fun updateCategory(category: Category, name: String, bucket: Bucket?) {
+        viewModelScope.launch {
+            categoryRepository.update(
+                category.copy(
+                    name = name,
+                    bucket = bucket,
+                    colorHex = bucket?.let { BucketColors.hexFor(it) } ?: category.colorHex,
+                ),
+            )
+        }
+    }
+
     fun deleteCategory(category: Category) {
         viewModelScope.launch { categoryRepository.delete(category) }
     }

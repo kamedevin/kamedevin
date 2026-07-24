@@ -15,3 +15,9 @@ fun Bucket.label(): String = when (this) {
     Bucket.WANTS -> "Wants"
     Bucket.SAVINGS -> "Savings"
 }
+
+fun ThemeMode.label(): String = when (this) {
+    ThemeMode.SYSTEM -> "System default"
+    ThemeMode.LIGHT -> "Light"
+    ThemeMode.DARK -> "Dark"
+}
