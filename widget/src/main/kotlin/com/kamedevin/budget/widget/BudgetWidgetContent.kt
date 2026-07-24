@@ -28,6 +28,10 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.kamedevin.budget.core.designsystem.theme.BucketColors
+import com.kamedevin.budget.core.designsystem.theme.md_theme_dark_background
+import com.kamedevin.budget.core.designsystem.theme.md_theme_dark_onBackground
+import com.kamedevin.budget.core.designsystem.theme.md_theme_light_background
+import com.kamedevin.budget.core.designsystem.theme.md_theme_light_onBackground
 import com.kamedevin.budget.core.model.BucketProgress
 import com.kamedevin.budget.core.model.BudgetProgress
 import com.kamedevin.budget.core.model.WidgetStyle
@@ -39,20 +43,33 @@ import com.kamedevin.budget.core.model.label
  * so screen readers announce it even though it isn't drawn. For the RINGS/BLOB styles, the
  * per-bucket percentages are combined into one contentDescription on the chart image since a
  * bitmap can't carry per-region semantics.
+ *
+ * [isDarkTheme] mirrors whatever theme the app itself is resolved to (its System/Light/Dark
+ * Settings choice, not just the raw system flag) using the same light/dark tokens as the app's
+ * own [com.kamedevin.budget.core.designsystem.theme.KameBudgetTheme], so the widget doesn't
+ * always render as if the app were in light mode.
  */
 @Composable
-fun BudgetWidgetContent(progress: BudgetProgress, style: WidgetStyle, chartBitmap: Bitmap?) {
+fun BudgetWidgetContent(
+    progress: BudgetProgress,
+    style: WidgetStyle,
+    chartBitmap: Bitmap?,
+    isDarkTheme: Boolean,
+) {
     val context = LocalContext.current
+    val backgroundColor = if (isDarkTheme) md_theme_dark_background else md_theme_light_background
+    val onBackgroundColor = if (isDarkTheme) md_theme_dark_onBackground else md_theme_light_onBackground
+    val textStyle = TextStyle(fontWeight = FontWeight.Medium, color = ColorProvider(onBackgroundColor))
 
     Column(
         modifier = GlanceModifier
             .fillMaxWidth()
-            .background(ColorProvider(Color.White))
+            .background(ColorProvider(backgroundColor))
             .padding(12.dp),
     ) {
         if (style == WidgetStyle.BARS || chartBitmap == null) {
             progress.buckets.forEach { bucketProgress ->
-                BucketRow(bucketProgress)
+                BucketRow(bucketProgress, textStyle)
                 Spacer(modifier = GlanceModifier.height(8.dp))
             }
         } else {
@@ -78,16 +95,13 @@ fun BudgetWidgetContent(progress: BudgetProgress, style: WidgetStyle, chartBitma
                 .clickable(actionStartActivity(Intent(context, QuickAddActivity::class.java))),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
-                text = "+ Add expense",
-                style = TextStyle(fontWeight = FontWeight.Medium),
-            )
+            Text(text = "+ Add expense", style = textStyle)
         }
     }
 }
 
 @Composable
-private fun BucketRow(bucketProgress: BucketProgress) {
+private fun BucketRow(bucketProgress: BucketProgress, textStyle: TextStyle) {
     val percent = (bucketProgress.fraction * 100).toInt()
 
     Column(
@@ -95,7 +109,7 @@ private fun BucketRow(bucketProgress: BucketProgress) {
             .fillMaxWidth()
             .semantics { contentDescription = "${bucketProgress.bucket.label()}: $percent% of target" },
     ) {
-        Text(text = bucketProgress.bucket.label(), style = TextStyle(fontWeight = FontWeight.Medium))
+        Text(text = bucketProgress.bucket.label(), style = textStyle)
         Spacer(modifier = GlanceModifier.height(4.dp))
         LinearProgressIndicator(
             progress = bucketProgress.fraction.coerceIn(0f, 1f),

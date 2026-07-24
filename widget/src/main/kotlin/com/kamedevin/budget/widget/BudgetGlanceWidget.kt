@@ -1,10 +1,12 @@
 package com.kamedevin.budget.widget
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.provideContent
+import com.kamedevin.budget.core.model.ThemeMode
 import com.kamedevin.budget.core.model.WidgetStyle
 import com.kamedevin.budget.widget.di.WidgetEntryPoint
 import dagger.hilt.android.EntryPointAccessors
@@ -20,6 +22,12 @@ class BudgetGlanceWidget : GlanceAppWidget() {
         )
         val progress = entryPoint.getBudgetProgressUseCase()(YearMonth.now()).first()
         val style = entryPoint.widgetPreferenceRepository().observeWidgetStyle().first()
+        val themeMode = entryPoint.themePreferenceRepository().observeThemeMode().first()
+        val isDarkTheme = when (themeMode) {
+            ThemeMode.LIGHT -> false
+            ThemeMode.DARK -> true
+            ThemeMode.SYSTEM -> isSystemInDarkTheme(context)
+        }
 
         val density = context.resources.displayMetrics.density
         val chartBitmap: Bitmap? = when (style) {
@@ -29,14 +37,24 @@ class BudgetGlanceWidget : GlanceAppWidget() {
             }
             WidgetStyle.BLOB -> {
                 val widthPx = (180 * density).toInt()
-                val heightPx = (100 * density).toInt()
+                val heightPx = (110 * density).toInt()
                 WidgetChartRenderer.renderBlob(progress, widthPx, heightPx)
             }
             WidgetStyle.BARS -> null
         }
 
         provideContent {
-            BudgetWidgetContent(progress = progress, style = style, chartBitmap = chartBitmap)
+            BudgetWidgetContent(
+                progress = progress,
+                style = style,
+                chartBitmap = chartBitmap,
+                isDarkTheme = isDarkTheme,
+            )
         }
+    }
+
+    private fun isSystemInDarkTheme(context: Context): Boolean {
+        val nightModeFlags = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES
     }
 }

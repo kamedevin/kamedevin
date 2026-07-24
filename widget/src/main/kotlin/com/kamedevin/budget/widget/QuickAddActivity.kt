@@ -3,7 +3,12 @@ package com.kamedevin.budget.widget
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kamedevin.budget.core.designsystem.theme.KameBudgetTheme
+import com.kamedevin.budget.core.model.ThemeMode
 import com.kamedevin.budget.feature.entry.QuickAddForm
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -16,10 +21,19 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 @AndroidEntryPoint
 class QuickAddActivity : ComponentActivity() {
+
+    private val themeViewModel: QuickAddThemeViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            KameBudgetTheme {
+            val themeMode by themeViewModel.themeMode.collectAsStateWithLifecycle()
+            val useDarkTheme = when (themeMode) {
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+            }
+            KameBudgetTheme(darkTheme = useDarkTheme) {
                 QuickAddForm(
                     onDismiss = { finish() },
                     onSaved = { finish() },

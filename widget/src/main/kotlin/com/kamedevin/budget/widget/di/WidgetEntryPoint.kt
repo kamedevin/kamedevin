@@ -1,5 +1,6 @@
 package com.kamedevin.budget.widget.di
 
+import com.kamedevin.budget.core.domain.repository.ThemePreferenceRepository
 import com.kamedevin.budget.core.domain.repository.WidgetPreferenceRepository
 import com.kamedevin.budget.core.domain.usecase.GetBudgetProgressUseCase
 import dagger.hilt.EntryPoint
@@ -16,4 +17,5 @@ import dagger.hilt.components.SingletonComponent
 interface WidgetEntryPoint {
     fun getBudgetProgressUseCase(): GetBudgetProgressUseCase
     fun widgetPreferenceRepository(): WidgetPreferenceRepository
+    fun themePreferenceRepository(): ThemePreferenceRepository
 }
