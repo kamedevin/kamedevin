@@ -35,3 +35,10 @@ enum class ThemeMode {
     LIGHT,
     DARK,
 }
+
+/** How the home-screen widget visualizes 50/30/20 progress. */
+enum class WidgetStyle {
+    BARS,
+    RINGS,
+    BLOB,
+}

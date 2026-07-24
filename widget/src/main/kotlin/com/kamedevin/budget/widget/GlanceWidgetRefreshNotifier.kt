@@ -9,7 +9,7 @@ import javax.inject.Inject
 class GlanceWidgetRefreshNotifier @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : WidgetRefreshNotifier {
-    override suspend fun notifyTransactionsChanged() {
+    override suspend fun refreshWidget() {
         BudgetGlanceWidget().updateAll(context)
     }
 }

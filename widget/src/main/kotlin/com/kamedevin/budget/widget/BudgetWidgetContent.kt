@@ -1,10 +1,13 @@
 package com.kamedevin.budget.widget
 
 import android.content.Intent
+import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
+import androidx.glance.Image
+import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.LinearProgressIndicator
@@ -17,6 +20,7 @@ import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.layout.size
 import androidx.glance.semantics.contentDescription
 import androidx.glance.semantics.semantics
 import androidx.glance.text.FontWeight
@@ -26,15 +30,18 @@ import androidx.glance.unit.ColorProvider
 import com.kamedevin.budget.core.designsystem.theme.BucketColors
 import com.kamedevin.budget.core.model.BucketProgress
 import com.kamedevin.budget.core.model.BudgetProgress
+import com.kamedevin.budget.core.model.WidgetStyle
 import com.kamedevin.budget.core.model.label
 
 /**
  * Deliberately shows no raw dollar amounts — only progress fractions per the app's requirement
  * that the widget stay visual-only. Each bar's percentage is still exposed via [contentDescription]
- * so screen readers announce it even though it isn't drawn.
+ * so screen readers announce it even though it isn't drawn. For the RINGS/BLOB styles, the
+ * per-bucket percentages are combined into one contentDescription on the chart image since a
+ * bitmap can't carry per-region semantics.
  */
 @Composable
-fun BudgetWidgetContent(progress: BudgetProgress) {
+fun BudgetWidgetContent(progress: BudgetProgress, style: WidgetStyle, chartBitmap: Bitmap?) {
     val context = LocalContext.current
 
     Column(
@@ -43,8 +50,25 @@ fun BudgetWidgetContent(progress: BudgetProgress) {
             .background(ColorProvider(Color.White))
             .padding(12.dp),
     ) {
-        progress.buckets.forEach { bucketProgress ->
-            BucketRow(bucketProgress)
+        if (style == WidgetStyle.BARS || chartBitmap == null) {
+            progress.buckets.forEach { bucketProgress ->
+                BucketRow(bucketProgress)
+                Spacer(modifier = GlanceModifier.height(8.dp))
+            }
+        } else {
+            val chartDescription = progress.buckets.joinToString(separator = ", ") { bucketProgress ->
+                "${bucketProgress.bucket.label()} ${(bucketProgress.fraction * 100).toInt()}% of target"
+            }
+            val imageModifier = if (style == WidgetStyle.RINGS) {
+                GlanceModifier.size(120.dp)
+            } else {
+                GlanceModifier.fillMaxWidth().height(100.dp)
+            }
+            Image(
+                provider = ImageProvider(chartBitmap),
+                contentDescription = chartDescription,
+                modifier = imageModifier,
+            )
             Spacer(modifier = GlanceModifier.height(8.dp))
         }
 

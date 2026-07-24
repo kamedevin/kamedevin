@@ -21,3 +21,9 @@ fun ThemeMode.label(): String = when (this) {
     ThemeMode.LIGHT -> "Light"
     ThemeMode.DARK -> "Dark"
 }
+
+fun WidgetStyle.label(): String = when (this) {
+    WidgetStyle.BARS -> "Bars"
+    WidgetStyle.RINGS -> "Rings"
+    WidgetStyle.BLOB -> "Blob"
+}

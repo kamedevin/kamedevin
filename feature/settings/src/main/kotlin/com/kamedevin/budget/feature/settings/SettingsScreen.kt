@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kamedevin.budget.core.model.ThemeMode
+import com.kamedevin.budget.core.model.WidgetStyle
 import com.kamedevin.budget.core.model.label
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -44,6 +45,7 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+    val widgetStyle by viewModel.widgetStyle.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     Scaffold(
@@ -73,6 +75,23 @@ fun SettingsScreen(
                             shape = SegmentedButtonDefaults.itemShape(index = index, count = ThemeMode.entries.size),
                         ) {
                             Text(mode.label())
+                        }
+                    }
+                }
+            }
+
+            HorizontalDivider()
+
+            Column(Modifier.padding(16.dp)) {
+                Text("Widget style", style = MaterialTheme.typography.titleMedium)
+                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                    WidgetStyle.entries.forEachIndexed { index, style ->
+                        SegmentedButton(
+                            selected = widgetStyle == style,
+                            onClick = { viewModel.setWidgetStyle(style) },
+                            shape = SegmentedButtonDefaults.itemShape(index = index, count = WidgetStyle.entries.size),
+                        ) {
+                            Text(style.label())
                         }
                     }
                 }

@@ -5,11 +5,13 @@ import com.kamedevin.budget.core.data.repository.BudgetSettingsRepositoryImpl
 import com.kamedevin.budget.core.data.repository.CategoryRepositoryImpl
 import com.kamedevin.budget.core.data.repository.ThemePreferenceRepositoryImpl
 import com.kamedevin.budget.core.data.repository.TransactionRepositoryImpl
+import com.kamedevin.budget.core.data.repository.WidgetPreferenceRepositoryImpl
 import com.kamedevin.budget.core.domain.repository.AccountRepository
 import com.kamedevin.budget.core.domain.repository.BudgetSettingsRepository
 import com.kamedevin.budget.core.domain.repository.CategoryRepository
 import com.kamedevin.budget.core.domain.repository.ThemePreferenceRepository
 import com.kamedevin.budget.core.domain.repository.TransactionRepository
+import com.kamedevin.budget.core.domain.repository.WidgetPreferenceRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -39,4 +41,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindThemePreferenceRepository(impl: ThemePreferenceRepositoryImpl): ThemePreferenceRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWidgetPreferenceRepository(impl: WidgetPreferenceRepositoryImpl): WidgetPreferenceRepository
 }

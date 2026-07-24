@@ -5,7 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kamedevin.budget.backup.api.BackupManager
 import com.kamedevin.budget.core.domain.repository.ThemePreferenceRepository
+import com.kamedevin.budget.core.domain.repository.WidgetPreferenceRepository
+import com.kamedevin.budget.core.domain.repository.WidgetRefreshNotifier
 import com.kamedevin.budget.core.model.ThemeMode
+import com.kamedevin.budget.core.model.WidgetStyle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
 import javax.inject.Inject
@@ -28,6 +31,8 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     private val backupManager: BackupManager,
     private val themePreferenceRepository: ThemePreferenceRepository,
+    private val widgetPreferenceRepository: WidgetPreferenceRepository,
+    private val widgetRefreshNotifier: WidgetRefreshNotifier,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -35,6 +40,9 @@ class SettingsViewModel @Inject constructor(
 
     val themeMode: StateFlow<ThemeMode> = themePreferenceRepository.observeThemeMode()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeMode.SYSTEM)
+
+    val widgetStyle: StateFlow<WidgetStyle> = widgetPreferenceRepository.observeWidgetStyle()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), WidgetStyle.BARS)
 
     init {
         viewModelScope.launch {
@@ -49,6 +57,13 @@ class SettingsViewModel @Inject constructor(
 
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { themePreferenceRepository.setThemeMode(mode) }
+    }
+
+    fun setWidgetStyle(style: WidgetStyle) {
+        viewModelScope.launch {
+            widgetPreferenceRepository.setWidgetStyle(style)
+            widgetRefreshNotifier.refreshWidget()
+        }
     }
 
     fun signIn(activity: Activity) {

@@ -20,18 +20,18 @@ class TransactionRepositoryImpl @Inject constructor(
 
     override suspend fun add(transaction: Transaction): Long {
         val id = transactionDao.insert(transaction.toEntity())
-        widgetRefreshNotifier.notifyTransactionsChanged()
+        widgetRefreshNotifier.refreshWidget()
         return id
     }
 
     override suspend fun update(transaction: Transaction) {
         transactionDao.update(transaction.toEntity())
-        widgetRefreshNotifier.notifyTransactionsChanged()
+        widgetRefreshNotifier.refreshWidget()
     }
 
     override suspend fun delete(id: Long) {
         transactionDao.deleteById(id)
-        widgetRefreshNotifier.notifyTransactionsChanged()
+        widgetRefreshNotifier.refreshWidget()
     }
 
     override suspend fun getById(id: Long): Transaction? = transactionDao.getById(id)?.toDomain()
