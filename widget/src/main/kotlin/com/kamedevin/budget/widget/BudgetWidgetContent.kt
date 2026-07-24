@@ -1,9 +1,11 @@
 package com.kamedevin.budget.widget
 
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalContext
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.LinearProgressIndicator
 import androidx.glance.appwidget.action.actionStartActivity
@@ -33,6 +35,8 @@ import com.kamedevin.budget.core.model.label
  */
 @Composable
 fun BudgetWidgetContent(progress: BudgetProgress) {
+    val context = LocalContext.current
+
     Column(
         modifier = GlanceModifier
             .fillMaxWidth()
@@ -47,7 +51,7 @@ fun BudgetWidgetContent(progress: BudgetProgress) {
         Row(
             modifier = GlanceModifier
                 .fillMaxWidth()
-                .clickable(actionStartActivity<QuickAddActivity>()),
+                .clickable(actionStartActivity(Intent(context, QuickAddActivity::class.java))),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
