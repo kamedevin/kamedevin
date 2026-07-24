@@ -5,6 +5,7 @@ import com.kamedevin.budget.core.data.mapper.toEntity
 import com.kamedevin.budget.core.database.dao.TransactionDao
 import com.kamedevin.budget.core.domain.repository.DailyTotal
 import com.kamedevin.budget.core.domain.repository.TransactionRepository
+import com.kamedevin.budget.core.domain.repository.WidgetRefreshNotifier
 import com.kamedevin.budget.core.model.Bucket
 import com.kamedevin.budget.core.model.Transaction
 import java.time.Instant
@@ -14,16 +15,23 @@ import kotlinx.coroutines.flow.map
 
 class TransactionRepositoryImpl @Inject constructor(
     private val transactionDao: TransactionDao,
+    private val widgetRefreshNotifier: WidgetRefreshNotifier,
 ) : TransactionRepository {
 
-    override suspend fun add(transaction: Transaction): Long = transactionDao.insert(transaction.toEntity())
+    override suspend fun add(transaction: Transaction): Long {
+        val id = transactionDao.insert(transaction.toEntity())
+        widgetRefreshNotifier.notifyTransactionsChanged()
+        return id
+    }
 
     override suspend fun update(transaction: Transaction) {
         transactionDao.update(transaction.toEntity())
+        widgetRefreshNotifier.notifyTransactionsChanged()
     }
 
     override suspend fun delete(id: Long) {
         transactionDao.deleteById(id)
+        widgetRefreshNotifier.notifyTransactionsChanged()
     }
 
     override suspend fun getById(id: Long): Transaction? = transactionDao.getById(id)?.toDomain()

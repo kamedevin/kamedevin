@@ -1,0 +1,4 @@
+<resources>
+    <string name="widget_label">Budget</string>
+    <string name="widget_loading">Loading budget…</string>
+</resources>
