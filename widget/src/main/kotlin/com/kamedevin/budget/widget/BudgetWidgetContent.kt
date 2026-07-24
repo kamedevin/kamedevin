@@ -1,6 +1,7 @@
 package com.kamedevin.budget.widget
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
 import androidx.glance.action.clickable
@@ -14,7 +15,6 @@ import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
-import androidx.glance.material3.GlanceTheme
 import androidx.glance.semantics.contentDescription
 import androidx.glance.semantics.semantics
 import androidx.glance.text.FontWeight
@@ -33,29 +33,27 @@ import com.kamedevin.budget.core.model.label
  */
 @Composable
 fun BudgetWidgetContent(progress: BudgetProgress) {
-    GlanceTheme {
-        Column(
+    Column(
+        modifier = GlanceModifier
+            .fillMaxWidth()
+            .background(ColorProvider(Color.White))
+            .padding(12.dp),
+    ) {
+        progress.buckets.forEach { bucketProgress ->
+            BucketRow(bucketProgress)
+            Spacer(modifier = GlanceModifier.height(8.dp))
+        }
+
+        Row(
             modifier = GlanceModifier
                 .fillMaxWidth()
-                .background(GlanceTheme.colors.background)
-                .padding(12.dp),
+                .clickable(actionStartActivity<QuickAddActivity>()),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            progress.buckets.forEach { bucketProgress ->
-                BucketRow(bucketProgress)
-                Spacer(modifier = GlanceModifier.height(8.dp))
-            }
-
-            Row(
-                modifier = GlanceModifier
-                    .fillMaxWidth()
-                    .clickable(actionStartActivity<QuickAddActivity>()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = "+ Add expense",
-                    style = TextStyle(fontWeight = FontWeight.Medium),
-                )
-            }
+            Text(
+                text = "+ Add expense",
+                style = TextStyle(fontWeight = FontWeight.Medium),
+            )
         }
     }
 }
@@ -75,7 +73,7 @@ private fun BucketRow(bucketProgress: BucketProgress) {
             progress = bucketProgress.fraction.coerceIn(0f, 1f),
             modifier = GlanceModifier.fillMaxWidth().height(8.dp),
             color = ColorProvider(BucketColors.colorFor(bucketProgress.bucket)),
-            backgroundColor = ColorProvider(androidx.compose.ui.graphics.Color.LightGray),
+            backgroundColor = ColorProvider(Color.LightGray),
         )
     }
 }
