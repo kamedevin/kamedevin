@@ -20,15 +20,20 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.ResponseBody
 
 private const val DRIVE_APPDATA_SCOPE = "https://www.googleapis.com/auth/drive.appdata"
 private const val MAX_BACKUPS_TO_KEEP = 5
+private val JSON_MEDIA_TYPE = "application/json".toMediaType()
 
 /**
  * Uses the classic GoogleSignInClient + GoogleAuthUtil pattern (rather than the newer Credential
  * Manager + Authorization API) to get a Drive-scoped access token — it's been the standard,
  * heavily-documented way to do this for years, and only needs one Android-type OAuth client
  * registered in Cloud Console (no separate web client ID).
+ *
+ * [DriveApi] returns raw OkHttp bodies rather than typed objects — JSON (de)serialization happens
+ * here directly via kotlinx.serialization, rather than through a Retrofit converter factory.
  */
 class GoogleDriveBackupManager @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -77,18 +82,30 @@ class GoogleDriveBackupManager @Inject constructor(
         return "Bearer $token"
     }
 
+    private suspend fun ResponseBody.readText(): String = withContext(Dispatchers.IO) { string() }
+
+    private suspend fun fetchFileList(token: String): List<DriveFile> {
+        val text = driveApi.listFiles(authorization = token).readText()
+        return json.decodeFromString(DriveFileListResponse.serializer(), text).files
+    }
+
     override suspend fun backupNow(): Result<BackupMetadata> = runCatching {
         val token = bearerToken()
         val snapshot = snapshotRepository.buildSnapshot()
         val fileName = "kame-budget-backup-${System.currentTimeMillis()}.json"
 
-        val created = driveApi.createFile(
-            authorization = token,
-            metadata = DriveFileMetadataRequest(name = fileName, parents = listOf("appDataFolder")),
+        val metadataJson = json.encodeToString(
+            DriveFileMetadataRequest.serializer(),
+            DriveFileMetadataRequest(name = fileName, parents = listOf("appDataFolder")),
         )
+        val createdText = driveApi.createFile(
+            authorization = token,
+            metadata = metadataJson.toRequestBody(JSON_MEDIA_TYPE),
+        ).readText()
+        val created = json.decodeFromString(DriveFile.serializer(), createdText)
 
         val payload = json.encodeToString(BackupSnapshot.serializer(), snapshot)
-        val requestBody = payload.toRequestBody("application/json".toMediaType())
+        val requestBody = payload.toRequestBody(JSON_MEDIA_TYPE)
         driveApi.uploadFileContent(authorization = token, fileId = created.id, content = requestBody)
 
         pruneOldBackups(token)
@@ -106,11 +123,9 @@ class GoogleDriveBackupManager @Inject constructor(
 
     override suspend fun restoreLatest(): Result<Unit> = runCatching {
         val token = bearerToken()
-        val files = driveApi.listFiles(authorization = token).files
-        val latest = files.firstOrNull() ?: error("No backups found in Google Drive")
+        val latest = fetchFileList(token).firstOrNull() ?: error("No backups found in Google Drive")
 
-        val body = driveApi.downloadFileContent(authorization = token, fileId = latest.id)
-        val text = withContext(Dispatchers.IO) { body.string() }
+        val text = driveApi.downloadFileContent(authorization = token, fileId = latest.id).readText()
         val snapshot = json.decodeFromString(BackupSnapshot.serializer(), text)
 
         snapshotRepository.applySnapshot(snapshot)
@@ -118,7 +133,7 @@ class GoogleDriveBackupManager @Inject constructor(
 
     override suspend fun listBackups(): Result<List<BackupMetadata>> = runCatching {
         val token = bearerToken()
-        driveApi.listFiles(authorization = token).files.map { file ->
+        fetchFileList(token).map { file ->
             BackupMetadata(
                 fileId = file.id,
                 createdAt = file.createdTime?.let { runCatching { Instant.parse(it) }.getOrNull() } ?: Instant.EPOCH,
@@ -131,7 +146,7 @@ class GoogleDriveBackupManager @Inject constructor(
     override fun observeLastBackupTime(): Flow<Instant?> = backupPreferences.observeLastBackupTime()
 
     private suspend fun pruneOldBackups(token: String) {
-        val files = driveApi.listFiles(authorization = token).files
+        val files = fetchFileList(token)
         if (files.size <= MAX_BACKUPS_TO_KEEP) return
         files.drop(MAX_BACKUPS_TO_KEEP).forEach { file ->
             runCatching { driveApi.deleteFile(authorization = token, fileId = file.id) }

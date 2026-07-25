@@ -16,14 +16,18 @@ import retrofit2.http.Streaming
  * Talks to the Drive REST API v3 directly via Retrofit/OkHttp rather than pulling in the full
  * google-api-services-drive client library, keeping this module lean. All calls target the
  * app-private `appDataFolder` space, which is hidden from the user's visible Drive.
+ *
+ * Every body is a raw [RequestBody]/[ResponseBody] rather than a typed `@Body`/return type —
+ * JSON (de)serialization is done manually in [GoogleDriveBackupManager] via kotlinx.serialization
+ * directly, rather than through a Retrofit converter factory.
  */
 interface DriveApi {
 
     @POST("drive/v3/files")
     suspend fun createFile(
         @Header("Authorization") authorization: String,
-        @Body metadata: DriveFileMetadataRequest,
-    ): DriveFile
+        @Body metadata: RequestBody,
+    ): ResponseBody
 
     @PATCH("upload/drive/v3/files/{fileId}")
     suspend fun uploadFileContent(
@@ -31,7 +35,7 @@ interface DriveApi {
         @Path("fileId") fileId: String,
         @Query("uploadType") uploadType: String = "media",
         @Body content: RequestBody,
-    ): DriveFile
+    ): ResponseBody
 
     @GET("drive/v3/files")
     suspend fun listFiles(
@@ -39,7 +43,7 @@ interface DriveApi {
         @Query("spaces") spaces: String = "appDataFolder",
         @Query("fields") fields: String = "files(id,name,createdTime,size)",
         @Query("orderBy") orderBy: String = "createdTime desc",
-    ): DriveFileListResponse
+    ): ResponseBody
 
     @GET("drive/v3/files/{fileId}")
     @Streaming
