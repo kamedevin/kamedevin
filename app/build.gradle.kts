@@ -45,12 +45,14 @@ dependencies {
     implementation(project(":feature:categories"))
     implementation(project(":feature:accounts"))
     implementation(project(":feature:settings"))
+    implementation(project(":feature:lock"))
     implementation(project(":backup:api"))
     implementation(project(":backup:googledrive"))
     implementation(project(":widget"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
 

@@ -1,12 +1,14 @@
 package com.kamedevin.budget.core.data.di
 
 import com.kamedevin.budget.core.data.repository.AccountRepositoryImpl
+import com.kamedevin.budget.core.data.repository.AppLockRepositoryImpl
 import com.kamedevin.budget.core.data.repository.BudgetSettingsRepositoryImpl
 import com.kamedevin.budget.core.data.repository.CategoryRepositoryImpl
 import com.kamedevin.budget.core.data.repository.ThemePreferenceRepositoryImpl
 import com.kamedevin.budget.core.data.repository.TransactionRepositoryImpl
 import com.kamedevin.budget.core.data.repository.WidgetPreferenceRepositoryImpl
 import com.kamedevin.budget.core.domain.repository.AccountRepository
+import com.kamedevin.budget.core.domain.repository.AppLockRepository
 import com.kamedevin.budget.core.domain.repository.BudgetSettingsRepository
 import com.kamedevin.budget.core.domain.repository.CategoryRepository
 import com.kamedevin.budget.core.domain.repository.ThemePreferenceRepository
@@ -45,4 +47,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindWidgetPreferenceRepository(impl: WidgetPreferenceRepositoryImpl): WidgetPreferenceRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAppLockRepository(impl: AppLockRepositoryImpl): AppLockRepository
 }

@@ -29,6 +29,7 @@ include(
     ":feature:categories",
     ":feature:accounts",
     ":feature:settings",
+    ":feature:lock",
     ":widget",
     ":backup:api",
     ":backup:googledrive",

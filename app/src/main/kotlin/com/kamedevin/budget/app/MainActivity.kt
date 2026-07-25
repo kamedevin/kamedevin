@@ -14,6 +14,7 @@ import com.kamedevin.budget.app.navigation.BudgetNavHost
 import com.kamedevin.budget.backup.api.SignInResultCoordinator
 import com.kamedevin.budget.core.designsystem.theme.KameBudgetTheme
 import com.kamedevin.budget.core.model.ThemeMode
+import com.kamedevin.budget.feature.lock.AppLockGate
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -50,7 +51,9 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
             }
             KameBudgetTheme(darkTheme = useDarkTheme) {
-                BudgetNavHost()
+                AppLockGate {
+                    BudgetNavHost()
+                }
             }
         }
     }

@@ -10,6 +10,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kamedevin.budget.core.designsystem.theme.KameBudgetTheme
 import com.kamedevin.budget.core.model.ThemeMode
 import com.kamedevin.budget.feature.entry.QuickAddForm
+import com.kamedevin.budget.feature.lock.AppLockGate
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -34,10 +35,12 @@ class QuickAddActivity : ComponentActivity() {
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
             }
             KameBudgetTheme(darkTheme = useDarkTheme) {
-                QuickAddForm(
-                    onDismiss = { finish() },
-                    onSaved = { finish() },
-                )
+                AppLockGate {
+                    QuickAddForm(
+                        onDismiss = { finish() },
+                        onSaved = { finish() },
+                    )
+                }
             }
         }
     }

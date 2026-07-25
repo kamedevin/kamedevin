@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,10 +22,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -46,7 +52,9 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val widgetStyle by viewModel.widgetStyle.collectAsStateWithLifecycle()
+    val isLockEnabled by viewModel.isLockEnabled.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    var showSetPinDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Settings") }) },
@@ -62,6 +70,30 @@ fun SettingsScreen(
                 leadingContent = { Icon(Icons.Default.AccountBalance, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth().clickable(onClick = onNavigateToAccounts),
             )
+
+            HorizontalDivider()
+
+            Column(Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column {
+                        Text("App lock", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "Require a PIN to open the app or the widget's quick-add",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    Switch(
+                        checked = isLockEnabled,
+                        onCheckedChange = { enabled ->
+                            if (enabled) showSetPinDialog = true else viewModel.disableLock()
+                        },
+                    )
+                }
+            }
 
             HorizontalDivider()
 
@@ -137,6 +169,16 @@ fun SettingsScreen(
                 }
             }
         }
+    }
+
+    if (showSetPinDialog) {
+        SetPinDialog(
+            onDismiss = { showSetPinDialog = false },
+            onConfirm = { pin ->
+                viewModel.setPinAndEnableLock(pin)
+                showSetPinDialog = false
+            },
+        )
     }
 }
 

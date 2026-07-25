@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kamedevin.budget.backup.api.BackupManager
+import com.kamedevin.budget.core.domain.repository.AppLockRepository
 import com.kamedevin.budget.core.domain.repository.ThemePreferenceRepository
 import com.kamedevin.budget.core.domain.repository.WidgetPreferenceRepository
 import com.kamedevin.budget.core.domain.repository.WidgetRefreshNotifier
@@ -33,6 +34,7 @@ class SettingsViewModel @Inject constructor(
     private val themePreferenceRepository: ThemePreferenceRepository,
     private val widgetPreferenceRepository: WidgetPreferenceRepository,
     private val widgetRefreshNotifier: WidgetRefreshNotifier,
+    private val appLockRepository: AppLockRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -43,6 +45,9 @@ class SettingsViewModel @Inject constructor(
 
     val widgetStyle: StateFlow<WidgetStyle> = widgetPreferenceRepository.observeWidgetStyle()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), WidgetStyle.BARS)
+
+    val isLockEnabled: StateFlow<Boolean> = appLockRepository.observeIsLockEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     init {
         viewModelScope.launch {
@@ -64,6 +69,14 @@ class SettingsViewModel @Inject constructor(
             widgetPreferenceRepository.setWidgetStyle(style)
             widgetRefreshNotifier.refreshWidget()
         }
+    }
+
+    fun setPinAndEnableLock(pin: String) {
+        viewModelScope.launch { appLockRepository.setPin(pin) }
+    }
+
+    fun disableLock() {
+        viewModelScope.launch { appLockRepository.disableLock() }
     }
 
     fun signIn(activity: Activity) {
