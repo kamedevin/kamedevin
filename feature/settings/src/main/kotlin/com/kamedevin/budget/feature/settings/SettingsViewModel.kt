@@ -26,6 +26,7 @@ data class SettingsUiState(
     val lastBackupTime: Instant? = null,
     val isWorking: Boolean = false,
     val message: String? = null,
+    val lockError: String? = null,
 )
 
 @HiltViewModel
@@ -75,8 +76,19 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { appLockRepository.setPin(pin) }
     }
 
-    fun disableLock() {
-        viewModelScope.launch { appLockRepository.disableLock() }
+    fun confirmDisableLock(pin: String) {
+        viewModelScope.launch {
+            if (appLockRepository.verifyPin(pin)) {
+                appLockRepository.disableLock()
+                _uiState.update { it.copy(lockError = null) }
+            } else {
+                _uiState.update { it.copy(lockError = "Incorrect PIN") }
+            }
+        }
+    }
+
+    fun clearLockError() {
+        _uiState.update { it.copy(lockError = null) }
     }
 
     fun signIn(activity: Activity) {

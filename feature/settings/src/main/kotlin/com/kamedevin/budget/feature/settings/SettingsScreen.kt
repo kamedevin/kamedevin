@@ -26,6 +26,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +56,11 @@ fun SettingsScreen(
     val isLockEnabled by viewModel.isLockEnabled.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var showSetPinDialog by remember { mutableStateOf(false) }
+    var showConfirmDisableDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isLockEnabled) {
+        if (!isLockEnabled) showConfirmDisableDialog = false
+    }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Settings") }) },
@@ -89,7 +95,7 @@ fun SettingsScreen(
                     Switch(
                         checked = isLockEnabled,
                         onCheckedChange = { enabled ->
-                            if (enabled) showSetPinDialog = true else viewModel.disableLock()
+                            if (enabled) showSetPinDialog = true else showConfirmDisableDialog = true
                         },
                     )
                 }
@@ -178,6 +184,18 @@ fun SettingsScreen(
                 viewModel.setPinAndEnableLock(pin)
                 showSetPinDialog = false
             },
+        )
+    }
+
+    if (showConfirmDisableDialog) {
+        ConfirmPinDialog(
+            title = "Enter PIN to disable app lock",
+            error = uiState.lockError,
+            onDismiss = {
+                showConfirmDisableDialog = false
+                viewModel.clearLockError()
+            },
+            onSubmit = { pin -> viewModel.confirmDisableLock(pin) },
         )
     }
 }
