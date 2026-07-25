@@ -1,5 +1,6 @@
 package com.kamedevin.budget.backup.googledrive
 
+import android.accounts.Account
 import android.app.Activity
 import android.content.Context
 import androidx.activity.result.ActivityResult
@@ -46,6 +47,7 @@ class GoogleDriveBackupManager @Inject constructor(
 
     private val signInOptions: GoogleSignInOptions by lazy {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
             .requestScopes(Scope(DRIVE_APPDATA_SCOPE))
             .build()
     }
@@ -75,7 +77,11 @@ class GoogleDriveBackupManager @Inject constructor(
 
     private suspend fun bearerToken(): String {
         val account = currentAccount() ?: error("Not signed in")
-        val androidAccount = account.account ?: error("Signed-in account has no underlying Android account")
+        // GoogleSignInAccount.account is deprecated and unreliably returns null even when signed
+        // in successfully. Building the Account from the email (populated via requestEmail()) is
+        // the reliable path — Google accounts are always registered under the "com.google" type.
+        val email = account.email ?: error("Signed-in account has no email")
+        val androidAccount = Account(email, "com.google")
         val token = withContext(Dispatchers.IO) {
             GoogleAuthUtil.getToken(context, androidAccount, "oauth2:$DRIVE_APPDATA_SCOPE")
         }
