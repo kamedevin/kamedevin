@@ -17,6 +17,7 @@ import java.time.Instant
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -72,7 +73,13 @@ class GoogleDriveBackupManager @Inject constructor(
     }
 
     override suspend fun signOut() {
-        GoogleSignIn.getClient(context, signInOptions).signOut()
+        // Plain signOut() only clears the local cache — it does NOT revoke the previously granted
+        // OAuth scopes, so a later sign-in silently reuses the old (pre-email-scope) grant without
+        // re-prompting. revokeAccess() actually revokes it server-side, forcing a fresh consent
+        // screen next time. Also properly awaited, unlike a fire-and-forget Task call.
+        withContext(Dispatchers.IO) {
+            GoogleSignIn.getClient(context, signInOptions).revokeAccess().await()
+        }
     }
 
     private suspend fun bearerToken(): String {

@@ -107,8 +107,15 @@ class SettingsViewModel @Inject constructor(
 
     fun signOut() {
         viewModelScope.launch {
-            backupManager.signOut()
-            _uiState.update { it.copy(isSignedIn = false) }
+            _uiState.update { it.copy(isWorking = true) }
+            val result = runCatching { backupManager.signOut() }
+            _uiState.update {
+                it.copy(
+                    isWorking = false,
+                    isSignedIn = false,
+                    message = result.exceptionOrNull()?.let { e -> e.message ?: "Sign out failed" },
+                )
+            }
         }
     }
 
